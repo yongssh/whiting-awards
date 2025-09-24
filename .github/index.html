@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Whiting Award Pedigree Sankey</title>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/d3-sankey@0.12.3/dist/d3-sankey.min.js"></script>
+  <style>
+    body {
+      font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+      background: #FBFAF5; 
+      margin: 0;
+      padding: 2rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      line-height: 1.5;
+      color: #333;
+    }
+    h1 {
+      margin-bottom: 0.2em;
+      font-size: 2rem;
+      color: #222;
+      text-align: center;
+
+    }
+    h2{
+      text-align: center;
+
+    }
+    p.intro {
+      max-width: 800px;
+      text-align: center;
+      font-size: 1rem;
+      color: #555;
+      margin-bottom: 2rem;
+    }
+    p.credits{
+      max-width: 800px;
+      text-align: center;
+      font-size: 0.8rem;
+      color: #555;
+      margin-bottom: 2rem;
+    }
+    svg {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .node rect {
+      cursor: pointer;
+      fill-opacity: 0.85;
+      shape-rendering: crispEdges;
+    }
+    .node text {
+      font-size: 12px;
+      fill: #333;
+    }
+    .link {
+      fill: none;
+      stroke-opacity: 0.3;
+    }
+    .link:hover {
+      stroke-opacity: 0.7;
+    }
+    .tooltip {
+      position: absolute;
+      text-align: center;
+      padding: 6px 10px;
+      font: 12px sans-serif;
+      background: rgba(0,0,0,0.75);
+      color: #fff;
+      border-radius: 4px;
+      pointer-events: none;
+      opacity: 0;
+    }
+  
+  </style>
+</head>
+<body>
+  <h1>Words, Numbers, The Works</h1>
+  <p class="credits">This data is sourced from the <a href="https://data.post45.org/posts/the-index-of-major-literary-prizes-in-the-us/index.html">Post45 Data Collective</a>, analyzed with pandas, and visualized with D3.js.</p>
+
+  <p class="intro">
+
+    The writing world is famously insular. In 2014, The Atlantic ran <a href="https://www.theatlantic.com/business/archive/2014/12/mfas-an-increasingly-popular-increasingly-bad-financial-decision/383706/">piece on MFAs and their risings costs</a>. Online, many other thinkpieces about MFAs and elite pedigrees abound. 
+    In 2023, the Post45 Data Collective released an index of major writing awards—every prize since 1918 worth $10,000 or more in 2022, adjusted for inflation. They published <a href="https://www.publicbooks.org/who-gets-to-be-a-writer/#fn-42353-9">findings </a> in Public Books.
+  </p>
+
+  <nav>
+  <a href="#pipeline">The Whiting Pipeline</a> | 
+  <a href="#winners">Explore the Winners</a> 
+  </nav>
+
+
+  <h2 id="pipeline">Who wins a Whiting Award? </h2>
+  <p class="intro">
+  In 2025, ten emerging writers in fiction, nonfiction, poetry, and drama each won $50,000 from the Whiting Foundation—they comprised the 40th cohort of awardees. </p>
+  </p>
+
+
+
+</nav>
+  <p  class="intro">This chart traces the flow of winners through
+    <strong>elite institutions</strong>, <strong>MFA programs</strong>, and the
+    <strong>Stegner Fellowship</strong>. Each band shows how many winners followed
+    that educational path before receiving the award.</p>
+
+<p class="intro">
+  In this dataset, “elite institutions” include Ivy League schools plus Stanford and
+  Chicago. The <strong>Stegner Fellowship</strong> is a unique Stanford program that functions like an MFA.
+  MFA degrees are listed as the actual institution.
+</p>
+<ul>
+  <li><b>Elite Institutions</b> (Harvard, Yale, Princeton, Stanford, etc.)</li>
+  <li><b>MFA Degrees</b> (Iowa, Columbia, NYU, etc.)</li>
+  <li><b>Stegner Fellowships</b> (highly selective Stanford fellowship)</li>
+</ul>
+
+  <svg id="sankey" width="900" height="550"></svg>
+  <div id="tooltip" class="tooltip"></div>
+
+  <script>
+    const svg = d3.select("#sankey"),
+          width = +svg.attr("width"),
+          height = +svg.attr("height");
+
+    
+    const sankey = d3.sankey()
+      .nodeWidth(20)
+      .nodePadding(15)
+      .extent([[1, 1], [width - 1, height - 6]]);
+
+    const color = d3.scaleOrdinal(d3.schemeCategory10);
+    const tooltip = d3.select("#tooltip");
+
+    d3.json("whiting_sankey.json").then(function(data) {
+      if (!data.nodes) {
+        const nodes = Array.from(
+          new Set(data.links.flatMap(d => [d.source, d.target])),
+          name => ({ name })
+        );
+        data.nodes = nodes;
+        data.links = data.links.map(d => ({
+          source: nodes.findIndex(n => n.name === d.source),
+          target: nodes.findIndex(n => n.name === d.target),
+          value: d.value
+        }));
+      }
+
+      const {nodes, links} = sankey(data);
+
+      // Links
+      svg.append("g")
+        .attr("fill", "none")
+        .selectAll("path")
+        .data(links)
+        .join("path")
+          .attr("class", "link")
+          .attr("d", d3.sankeyLinkHorizontal())
+          .attr("stroke", d => color(d.source.name))
+          .attr("stroke-width", d => Math.max(1, d.width))
+          .on("mousemove", (event, d) => {
+            tooltip.style("opacity", 1)
+              .html(`${d.source.name} → ${d.target.name}<br><b>${d.value}</b> winners`)
+              .style("left", (event.pageX + 10) + "px")
+              .style("top", (event.pageY - 20) + "px");
+          })
+          .on("mouseleave", () => tooltip.style("opacity", 0));
+
+      // Nodes
+      const node = svg.append("g")
+        .selectAll("g")
+        .data(nodes)
+        .join("g")
+        .attr("class", "node");
+
+      node.append("rect")
+        .attr("x", d => d.x0)
+        .attr("y", d => d.y0)
+        .attr("height", d => d.y1 - d.y0)
+        .attr("width", d => d.x1 - d.x0)
+        .attr("fill", d => color(d.name))
+        .on("mousemove", (event, d) => {
+          tooltip.style("opacity", 1)
+            .html(`${d.name}<br><b>${d.value}</b> winners`)
+            .style("left", (event.pageX + 10) + "px")
+            .style("top", (event.pageY - 20) + "px");
+        })
+        .on("mouseleave", () => tooltip.style("opacity", 0));
+
+      node.append("text")
+        .attr("x", d => d.x0 - 6)
+        .attr("y", d => (d.y1 + d.y0) / 2)
+        .attr("dy", "0.35em")
+        .attr("text-anchor", "end")
+        .text(d => d.name)
+        .filter(d => d.x0 < width / 2)
+        .attr("x", d => d.x1 + 6)
+        .attr("text-anchor", "start");
+
+        // ----- ANALYSIS: derive counts from the actual Sankey links -----
+function sumValues(arr) { return d3.sum(arr, d => d.value || 0); }
+function pct(n, d) { return d ? (100 * n / d) : 0; }
+function fmt1(x) { return (Math.round(x * 10) / 10).toFixed(1) + "%"; }
+
+const totalWinners = sumValues(links.filter(l => l.target.name === "Whiting Award"));
+
+// MFA / No MFA
+const mfaWinners    = sumValues(links.filter(l => l.source.name === "MFA"));
+const noMfaWinners  = sumValues(links.filter(l => l.source.name === "No MFA"));
+
+// Stegner / No Stegner (these are the step right before Whiting)
+const stegWinners   = sumValues(links.filter(l => l.source.name === "Stegner"    && l.target.name === "Whiting Award"));
+const noStegWinners = sumValues(links.filter(l => l.source.name === "No Stegner" && l.target.name === "Whiting Award"));
+
+// Elite vs Non-Elite (left-most step)
+const eliteWinners     = sumValues(links.filter(l => l.source.name === "Elite Institution"));
+const nonEliteWinners  = sumValues(links.filter(l => l.source.name === "Non-Elite Institution"));
+
+// Optional: how many of the MFA folks also had Stegner?
+const mfaToSteg = sumValues(links.filter(l => l.source.name === "MFA" && l.target.name === "Stegner"));
+//****//
+
+// Build a short narrative
+const text = [];
+text.push(`Based on ${totalWinners} Whiting Award winners in this dataset:`);
+
+if (mfaWinners || noMfaWinners) {
+  text.push(`• ${mfaWinners} (${fmt1(pct(mfaWinners, totalWinners))}) had an MFA; ` +
+            `${noMfaWinners} (${fmt1(pct(noMfaWinners, totalWinners))}) did not.`);
+}
+if (stegWinners || noStegWinners) {
+  text.push(`• ${stegWinners} (${fmt1(pct(stegWinners, totalWinners))}) held a Stegner Fellowship.`);
+}
+if (eliteWinners || nonEliteWinners) {
+  text.push(`• ${eliteWinners} (${fmt1(pct(eliteWinners, totalWinners))}) came from elite undergraduate institutions.`);
+}
+if (mfaToSteg) {
+  text.push(`• Among MFA recipients, ${mfaToSteg} (${fmt1(pct(mfaToSteg, mfaWinners))}) also had a Stegner Fellowship.`);
+}
+
+// Inject narrative
+d3.select("#analysis-text").text(text.join(" "));
+
+// Fill the small table
+const rows = [
+  { k: "MFA",            n: mfaWinners,    p: fmt1(pct(mfaWinners, totalWinners)) },
+  { k: "No MFA",         n: noMfaWinners,  p: fmt1(pct(noMfaWinners, totalWinners)) },
+  { k: "Stegner",        n: stegWinners,   p: fmt1(pct(stegWinners, totalWinners)) },
+  { k: "No Stegner",     n: noStegWinners, p: fmt1(pct(noStegWinners, totalWinners)) },
+  { k: "Elite Institution",    n: eliteWinners,    p: fmt1(pct(eliteWinners, totalWinners)) },
+  { k: "Non-Elite Institution", n: nonEliteWinners, p: fmt1(pct(nonEliteWinners, totalWinners)) },
+].filter(r => r.n > 0);
+
+const tbody = d3.select("#analysis-table tbody");
+tbody.selectAll("tr")
+  .data(rows)
+  .join("tr")
+  .html(d => `
+    <td style="border-bottom:1px solid #eee;padding:8px;">${d.k}</td>
+    <td style="border-bottom:1px solid #eee;padding:8px;text-align:right;">${d.n}</td>
+    <td style="border-bottom:1px solid #eee;padding:8px;text-align:right;">${d.p}</td>
+  `);
+
+    });
+
+    
+  </script>
+
+  <section id="analysis" style="max-width:900px;margin:16px auto 40px;">
+
+  <h2 style="margin:0 0 8px;">Breaking it down</h2>
+  <p id="analysis-text" style="color:#555;margin:0 0 12px;"></p>
+  <table id="analysis-table" style="width:100%;border-collapse:collapse;font-size:14px;">
+    <thead>
+      <tr>
+        <th style="text-align:left;border-bottom:1px solid #ddd;padding:8px;">Category</th>
+        <th style="text-align:right;border-bottom:1px solid #ddd;padding:8px;">Winners</th>
+        <th style="text-align:right;border-bottom:1px solid #ddd;padding:8px;">Share</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</section>
+
+  
+ <h2 id="winners">Explore the Winners</h2>
+<p class="intro">
+  Search, sort, or filter the list of Whiting Award winners and explore their educational pedigrees.
+</p>
+
+<table id="winnersTable" class="display" style="width:100%">
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Year</th>
+      <th>MFA Institution</th>
+      <th>Elite Institution Affiliation</th>
+      <th>Stegner Fellowship</th>
+      <!-- <th>Prize</th> -->
+    </tr>
+  </thead>
+  <tbody></tbody>
+</table>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+
+<script>
+  d3.csv("whiting_winners.csv").then(data => {
+    $('#winnersTable').DataTable({
+      data: data,
+      columns: [
+        { data: "full_name" },
+        { data: "prize_year" },
+        { data: "mfa_degree" },
+        { data: "elite_institution" },
+        { data: "stegner" },
+        // { data: "prize_name" }
+      ],
+      pageLength: 10
+    });
+  });
+</script>
+
+</body>
+</html>

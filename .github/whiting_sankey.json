@@ -1,0 +1,54 @@
+{
+  "links": [
+    {
+      "source": "Elite Institution",
+      "target": "MFA",
+      "value": 41
+    },
+    {
+      "source": "Elite Institution",
+      "target": "No MFA",
+      "value": 41
+    },
+    {
+      "source": "MFA",
+      "target": "No Stegner",
+      "value": 177
+    },
+    {
+      "source": "MFA",
+      "target": "Stegner",
+      "value": 10
+    },
+    {
+      "source": "No MFA",
+      "target": "No Stegner",
+      "value": 154
+    },
+    {
+      "source": "No MFA",
+      "target": "Stegner",
+      "value": 7
+    },
+    {
+      "source": "No Stegner",
+      "target": "Whiting Award",
+      "value": 331
+    },
+    {
+      "source": "Non-Elite Institution",
+      "target": "MFA",
+      "value": 146
+    },
+    {
+      "source": "Non-Elite Institution",
+      "target": "No MFA",
+      "value": 120
+    },
+    {
+      "source": "Stegner",
+      "target": "Whiting Award",
+      "value": 17
+    }
+  ]
+}
