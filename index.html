@@ -6,82 +6,66 @@
   <script src="https://d3js.org/d3.v7.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/d3-sankey@0.12.3/dist/d3-sankey.min.js"></script>
   <style>
-    body {
-      font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-      background: #FBFAF5; 
-      margin: 0;
-      padding: 2rem;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      line-height: 1.5;
-      color: #333;
-      justify-content: center;
-    }
-    h1 {
-      margin-bottom: 0.2em;
-      font-size: 2rem;
-      color: #222;
-      text-align: center;
+/* === Global === */
+body {
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  background: #FBFAF5;
+  margin: 0;
+  padding: 2rem;
+  line-height: 1.5;
+  color: #333;
+}
 
-    }
-    h2{
-      text-align: center;
-      padding-top:1rem;
-      padding-bottom:1rem;
+body.hideContent #mainContent {
+  display: none;
+}
 
-    }
-    p {
-      max-width: 800px;
-      text-align: center;
-      font-size: 1rem;
-      color: #555;
-      margin-bottom: 2rem;
-    }
-    p.credits{
-      max-width: 800px;
-      text-align: center;
-      font-size: 0.8rem;
-      color: #555;
-      margin-bottom: 2rem;
-    }
-    svg {
-      background: white;
-      border-radius: 12px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    }
-    .node rect {
-      cursor: pointer;
-      fill-opacity: 0.85;
-      shape-rendering: crispEdges;
-    }
-    .node text {
-      font-size: 12px;
-      fill: #333;
-    }
-    .link {
-      fill: none;
-      stroke-opacity: 0.3;
-    }
-    .link:hover {
-      stroke-opacity: 0.7;
-    }
-    .tooltip {
-      position: absolute;
-      text-align: center;
-      padding: 6px 10px;
-      font: 12px sans-serif;
-      background: rgba(0,0,0,0.75);
-      color: #fff;
-      border-radius: 4px;
-      pointer-events: none;
-      opacity: 0;
-    }
+/* === Layout === */
+#mainContent {
+  width: clamp(300px, 90%, 900px); /* flexible, but never smaller than 300px or wider than 900px */
+  margin: 0 auto;
+  text-align: center;
+  padding: 1rem;
+}
 
-  .entry-page {
+nav {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+/* === Typography === */
+h1 {
+  margin-bottom: 0.2em;
+  font-size: 2rem;
+  color: #222;
+  text-align: center;
+}
+
+h2 {
+  text-align: center;
+  padding: 1rem 0;
+}
+
+p {
+  max-width: 800px;
+  margin: 0 auto 2rem;
+  text-align: center;
+  font-size: 1rem;
+  color: #555;
+}
+
+p.credits {
+  font-size: 0.8rem;
+  color: #555;
+}
+
+/* === Entry Page Overlay === */
+.entry-page {
   position: fixed;
   inset: 0;
-  background: #FBFAF5; 
+  background: #FBFAF5;
   color: rgb(5, 6, 81);
   display: flex;
   flex-direction: column;
@@ -89,7 +73,6 @@
   align-items: center;
   text-align: center;
   z-index: 9999;
-
   opacity: 1;
   visibility: visible;
   transition: opacity 1s ease, visibility 1s ease;
@@ -100,13 +83,6 @@
   visibility: hidden;
 }
 
-#entryText {
-  font-size: 2rem;
-  max-width: 700px;
-  white-space: pre-line;
-  opacity: 0;
-}
-
 #enterBtn {
   margin-top: 2rem;
   padding: 0.75rem 1.5rem;
@@ -115,36 +91,174 @@
   color: rgb(5, 6, 81);
   border-radius: 8px;
   cursor: pointer;
-  opacity: 1; 
   transition: opacity 1s, background 0.3s;
 }
 
-
 #enterBtn:hover {
-  background: rgba(255,255,255,0.2);
-}   
-.mainContent{
- 
-
-}
-    body.hideContent #mainContent{
-      display:none;
-    }
-
-    #mainContent {
-  width: min(90%, 900px);   /* up to 900px wide, but shrink to 90% on small screens */
-  margin: 0 auto;           /* centers it horizontally */
-  text-align: center;       /* centers inline text and nav links */
-  padding: 1rem;            /* small padding so text doesn’t hit screen edges */
-  
+  background: rgba(5, 6, 81, 0.1);
 }
 
-nav {
-  display: flex;
-  justify-content: center;
-  flex-wrap: wrap;   /* allows nav links to wrap on small screens */
-  gap: 1rem;
+/* === Sankey Chart === */
+svg#sankey {
+  max-width: 100%;
+  height: auto;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
+
+.node rect {
+  cursor: pointer;
+  fill-opacity: 0.85;
+  shape-rendering: crispEdges;
+}
+
+.node text {
+  font-size: 12px;
+  fill: #333;
+}
+
+.link {
+  fill: none;
+  stroke-opacity: 0.3;
+}
+
+.link:hover {
+  stroke-opacity: 0.7;
+}
+
+.tooltip {
+  position: absolute;
+  text-align: center;
+  padding: 6px 10px;
+  font: 12px sans-serif;
+  background: rgba(0,0,0,0.75);
+  color: #fff;
+  border-radius: 4px;
+  pointer-events: none;
+  opacity: 0;
+}
+
+/* === Table Container === */
+.table-container {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  margin: 2rem auto;
+  border: 2px solid rgb(5, 6, 81);
+  border-radius: 8px;
+  padding: 1rem;
+  background: #FBFAF5;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+/* === Winners Table === */
+#winnersTable {
+  width: 100% !important;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+#winnersTable thead th {
+  text-align: left;
+  padding: 12px 8px;
+  font-weight: 600;
+  color: rgb(5, 6, 81);
+  border-bottom: 2px solid #ddd;
+  background: #FBFAF5;
+}
+
+#winnersTable tbody td {
+  padding: 12px 8px;
+  border-bottom: 1px solid #eee;
+  text-align: left;
+}
+
+#winnersTable tbody tr:nth-child(even) {
+  background: #FBFAF5;
+}
+
+#winnersTable tbody tr:hover {
+  background: #eef1f8;
+  transition: background 0.2s ease;
+}
+
+/* Right-align numeric Year column */
+#winnersTable tbody td:nth-child(2) {
+  text-align: right;
+  color: #444;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Responsive adjustments */
+@media (max-width: 600px) {
+  #winnersTable {
+    font-size: 0.85rem;
+  }
+  #winnersTable th,
+  #winnersTable td {
+    padding: 8px 6px;
+  }
+}
+
+/* === DataTables Customizations === */
+.dataTables_filter {
+  margin-bottom: 1rem;
+  text-align: right;
+}
+
+.dataTables_filter label {
+  font-size: 0.9rem;
+  color: #333;
+}
+
+.dataTables_filter input {
+  margin-left: 0.5rem;
+  padding: 6px 10px;
+  border: 1px solid rgb(5, 6, 81);
+  border-radius: 4px;
+  font-size: 0.9rem;
+  outline: none;
+}
+
+.dataTables_filter input:focus {
+  border-color: rgb(5, 6, 81);
+  box-shadow: 0 0 3px rgba(5, 6, 81, 0.4);
+}
+
+.dataTables_wrapper .dataTables_paginate {
+  margin-top: 1rem;
+  text-align: center;
+}
+
+.dataTables_wrapper .dataTables_paginate .paginate_button {
+  border: 1px solid rgb(5, 6, 81);
+  padding: 4px 10px;
+  margin: 0 2px;
+  border-radius: 4px;
+  background: #fff;
+  color: rgb(5, 6, 81) !important;
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+
+.dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+  background: rgb(5, 6, 81);
+  color: #fff !important;
+}
+
+.dataTables_wrapper .dataTables_paginate .paginate_button.current {
+  background: rgb(5, 6, 81);
+  color: #fff !important;
+}
+
+.dataTables_length select {
+  border: 1px solid rgb(5, 6, 81);
+  border-radius: 4px;
+  padding: 4px;
+  font-size: 0.85rem;
+}
+
 
   </style>
 </head>
@@ -368,19 +482,24 @@ tbody.selectAll("tr")
 
   <p>Search, sort, or filter the list of Whiting Award winners and explore their educational pedigrees.</p>
 
-<table id="winnersTable" class="display" style="width:100%">
-  <thead>
-    <tr>
-      <th>Name</th>
-      <th>Year</th>
-      <th>MFA Institution</th>
-      <th>Elite Institution Affiliation</th>
-      <th>Stegner Fellowship</th>
-      <!-- <th>Prize</th> -->
-    </tr>
-  </thead>
-  <tbody></tbody>
-</table>
+<div class="table-container">
+  <table id="winnersTable" class="display">
+    <p style="font-size:0.8rem; color:#666; margin-top:0.5rem; text-align:right;">
+    Source: Post45 Data Collective
+  </p>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Year</th>
+        <th>MFA Institution</th>
+        <th>Elite Institution Affiliation</th>
+        <th>Stegner Fellowship</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</div>
+
 
 </div>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
