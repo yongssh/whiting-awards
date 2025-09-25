@@ -16,6 +16,7 @@
       align-items: center;
       line-height: 1.5;
       color: #333;
+      justify-content: center;
     }
     h1 {
       margin-bottom: 0.2em;
@@ -26,9 +27,11 @@
     }
     h2{
       text-align: center;
+      padding-top:1rem;
+      padding-bottom:1rem;
 
     }
-    p.intro {
+    p {
       max-width: 800px;
       text-align: center;
       font-size: 1rem;
@@ -74,14 +77,89 @@
       pointer-events: none;
       opacity: 0;
     }
+
+  .entry-page {
+  position: fixed;
+  inset: 0;
+  background: #FBFAF5; 
+  color: rgb(5, 6, 81);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  z-index: 9999;
+
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 1s ease, visibility 1s ease;
+}
+
+.entry-page.hidden {
+  opacity: 0;
+  visibility: hidden;
+}
+
+#entryText {
+  font-size: 2rem;
+  max-width: 700px;
+  white-space: pre-line;
+  opacity: 0;
+}
+
+#enterBtn {
+  margin-top: 2rem;
+  padding: 0.75rem 1.5rem;
+  border: 2px solid rgb(5, 6, 81);
+  background: transparent;
+  color: rgb(5, 6, 81);
+  border-radius: 8px;
+  cursor: pointer;
+  opacity: 1; 
+  transition: opacity 1s, background 0.3s;
+}
+
+
+#enterBtn:hover {
+  background: rgba(255,255,255,0.2);
+}   
+.mainContent{
+ 
+
+}
+    body.hideContent #mainContent{
+      display:none;
+    }
+
+    #mainContent {
+  width: min(90%, 900px);   /* up to 900px wide, but shrink to 90% on small screens */
+  margin: 0 auto;           /* centers it horizontally */
+  text-align: center;       /* centers inline text and nav links */
+  padding: 1rem;            /* small padding so text doesn’t hit screen edges */
   
+}
+
+nav {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;   /* allows nav links to wrap on small screens */
+  gap: 1rem;
+}
+
   </style>
 </head>
-<body>
+<body class="hideContent">
+  
+  <div id="entryPage" class="entry-page">
+    <h1>Words, Numbers, The Works</h1>
+    <p class="credits">This data is sourced from the <a href="https://data.post45.org/posts/the-index-of-major-literary-prizes-in-the-us/index.html">Post45 Data Collective</a>, analyzed with pandas, and visualized with D3.js.</p>
+    <button id="enterBtn">Click to Enter</button>
+  </div>
+
+  <div id="mainContent">
   <h1>Words, Numbers, The Works</h1>
   <p class="credits">This data is sourced from the <a href="https://data.post45.org/posts/the-index-of-major-literary-prizes-in-the-us/index.html">Post45 Data Collective</a>, analyzed with pandas, and visualized with D3.js.</p>
-
-  <p class="intro">
+  <p>
 
     The writing world is famously insular. In 2014, The Atlantic ran <a href="https://www.theatlantic.com/business/archive/2014/12/mfas-an-increasingly-popular-increasingly-bad-financial-decision/383706/">piece on MFAs and their risings costs</a>. Online, many other thinkpieces about MFAs and elite pedigrees abound. 
     In 2023, the Post45 Data Collective released an index of major writing awards—every prize since 1918 worth $10,000 or more in 2022, adjusted for inflation. They published <a href="https://www.publicbooks.org/who-gets-to-be-a-writer/#fn-42353-9">findings</a> in Public Books.
@@ -92,21 +170,17 @@
   <a href="#winners">Explore the Winners</a> 
   </nav>
 
-
   <h2 id="pipeline">Who wins a Whiting Award? </h2>
-  <p class="intro">
+  <p>
   In 2025, ten emerging writers in fiction, nonfiction, poetry, and drama each won $50,000 from the Whiting Foundation—they comprised the 40th cohort of awardees. </p>
-  </p>
-
-
 
 </nav>
-  <p  class="intro">This chart traces the flow of winners through
+  <p>This chart traces the flow of winners through
     <strong>elite institutions</strong>, <strong>MFA programs</strong>, and the
     <strong>Stegner Fellowship</strong>. Each band shows how many winners followed
     that educational path before receiving the award.</p>
 
-<p class="intro">
+ <p>
   In this dataset, “elite institutions” include Ivy League schools plus Stanford and
   Chicago. The <strong>Stegner Fellowship</strong> is a unique Stanford program that functions like an MFA.
   MFA degrees are listed as the actual institution.
@@ -223,25 +297,25 @@ const mfaToSteg = sumValues(links.filter(l => l.source.name === "MFA" && l.targe
 //****//
 
 // Build a short narrative
-const text = [];
-text.push(`Based on ${totalWinners} Whiting Award winners in this dataset:`);
+// const text = [];
+// text.push(`Based on ${totalWinners} Whiting Award winners in this dataset:`);
 
-if (mfaWinners || noMfaWinners) {
-  text.push(`• ${mfaWinners} (${fmt1(pct(mfaWinners, totalWinners))}) had an MFA; ` +
-            `${noMfaWinners} (${fmt1(pct(noMfaWinners, totalWinners))}) did not.`);
-}
-if (stegWinners || noStegWinners) {
-  text.push(`• ${stegWinners} (${fmt1(pct(stegWinners, totalWinners))}) held a Stegner Fellowship.`);
-}
-if (eliteWinners || nonEliteWinners) {
-  text.push(`• ${eliteWinners} (${fmt1(pct(eliteWinners, totalWinners))}) came from elite undergraduate institutions.`);
-}
-if (mfaToSteg) {
-  text.push(`• Among MFA recipients, ${mfaToSteg} (${fmt1(pct(mfaToSteg, mfaWinners))}) also had a Stegner Fellowship.`);
-}
+// if (mfaWinners || noMfaWinners) {
+//   text.push(`• ${mfaWinners} (${fmt1(pct(mfaWinners, totalWinners))}) had an MFA; ` +
+//             `${noMfaWinners} (${fmt1(pct(noMfaWinners, totalWinners))}) did not.`);
+// }
+// if (stegWinners || noStegWinners) {
+//   text.push(`• ${stegWinners} (${fmt1(pct(stegWinners, totalWinners))}) held a Stegner Fellowship.`);
+// }
+// if (eliteWinners || nonEliteWinners) {
+//   text.push(`• ${eliteWinners} (${fmt1(pct(eliteWinners, totalWinners))}) came from elite undergraduate institutions.`);
+// }
+// if (mfaToSteg) {
+//   text.push(`• Among MFA recipients, ${mfaToSteg} (${fmt1(pct(mfaToSteg, mfaWinners))}) also had a Stegner Fellowship.`);
+// }
 
 // Inject narrative
-d3.select("#analysis-text").text(text.join(" "));
+// d3.select("#analysis-text").text(text.join(" "));
 
 // Fill the small table
 const rows = [
@@ -270,8 +344,10 @@ tbody.selectAll("tr")
 
   <section id="analysis" style="max-width:900px;margin:16px auto 40px;">
 
-  <h2 style="margin:0 0 8px;">Breaking it down</h2>
-  <p id="analysis-text" style="color:#555;margin:0 0 12px;"></p>
+  <h2>Breaking it down</h2>
+    <p>Based on 348 Whiting Award winners in this dataset, 187 (53.7%) had an MFA. That's more than half of all Whiting Award winners, and most of the non-MFA winners attended non-elite institutions.</p>
+    <p>Out of these winners, 17 (4.9%) held a Stegner Fellowship. To be clear, the dataset's structure means that all Stegner Fellows are automatically associated with an elite institution (Stanford). </p>
+    <p>Among MFA recipients, 10 (5.3%) also had a Stegner Fellowship.</p>
   <table id="analysis-table" style="width:100%;border-collapse:collapse;font-size:14px;">
     <thead>
       <tr>
@@ -284,11 +360,13 @@ tbody.selectAll("tr")
   </table>
 </section>
 
+
   
- <h2 id="winners">Explore the Winners</h2>
-<p class="intro">
-  Search, sort, or filter the list of Whiting Award winners and explore their educational pedigrees.
-</p>
+<h2 id="winners">Explore the Winners</h2>
+  <p>Some famous winners include Colson Whitehead, Ocean Vuong, and Jonathan Franzen.</p>
+  <p>"It's intended to win someone a year where they can think about nothing but doing their own writing," Courtney Hodell, the directory of literary programs at the Whiting Foundation said to <a href="https://www.npr.org/2025/04/12/nx-s1-5351347/40-years-later-the-whiting-awards-remain-at-the-forefront-of-launching-literary-talent">NPR</a> in 2025.</p>
+
+  <p>Search, sort, or filter the list of Whiting Award winners and explore their educational pedigrees.</p>
 
 <table id="winnersTable" class="display" style="width:100%">
   <thead>
@@ -304,6 +382,7 @@ tbody.selectAll("tr")
   <tbody></tbody>
 </table>
 
+</div>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
 <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
@@ -323,6 +402,21 @@ tbody.selectAll("tr")
       pageLength: 10
     });
   });
+
+const btn = document.getElementById("enterBtn");
+const entryPage = document.getElementById("entryPage");
+
+btn.addEventListener("click", () => {
+  // Trigger fade-out
+  entryPage.classList.add("hidden");
+
+  // After transition ends, stop blocking clicks
+  setTimeout(() => {
+    entryPage.style.display = "none";
+  }, 1000); // matches the 1s transition
+  document.body.classList.remove("hideContent");
+
+});
 </script>
 
 </body>
